@@ -1,0 +1,3 @@
+app:
+  auth:
+    whitelist: /actuator/**,/auth/**,/public/**
