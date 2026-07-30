@@ -1,4 +1,4 @@
-name: CD Build & Push
+name: CD Build & Deploy
 
 on:
   push:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-and-push:
-    name: Build & Push Images
+    name: Build & Push
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login to GitHub Container Registry
+      - name: Login to ghcr.io
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -39,7 +39,49 @@ jobs:
           docker build \
             --build-arg SERVICE=${{ matrix.service }}-service \
             -t $IMAGE:latest \
-            -t $IMAGE:${{ github.sha }} \
             .
           docker push $IMAGE:latest
-          docker push $IMAGE:${{ github.sha }}
+
+  deploy:
+    name: Deploy
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync to Server
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ECS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.ECS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          rsync -avz -e "ssh -i ~/.ssh/deploy_key" \
+            deploy/compose/ \
+            ${{ secrets.ECS_USER }}@${{ secrets.ECS_HOST }}:/opt/campus-fruit-marketplace/deploy/compose/
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.ECS_HOST }}
+          username: ${{ secrets.ECS_USER }}
+          key: ${{ secrets.ECS_SSH_KEY }}
+          port: ${{ secrets.ECS_PORT }}
+          timeout: 15m
+          script: |
+            set -e
+            cd /opt/campus-fruit-marketplace
+
+            echo "=== Login to ghcr.io ==="
+            echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            echo "=== Pull & Start ==="
+            docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all pull
+            docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all up -d --wait
+
+            echo "=== Status ==="
+            docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all ps
+
+            echo "=== Cleanup ==="
+            docker image prune -af --filter "until=48h"
