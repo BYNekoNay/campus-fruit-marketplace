@@ -8,6 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +52,8 @@ class RankingFormulaTest {
         config.setBayesianPriorWeight(10);
 
         formula = new RankingFormula(weights, config);
-        sortModeHandler = new SortModeHandler(formula);
+        sortModeHandler = new SortModeHandler(formula,
+                new com.campusfruit.discovery.client.OrderProjectionClient("http://127.0.0.1:1", "test"));
 
         // 便宜 + 近 = 最佳候选
         cheapNear = createProjection(1L, 1L, "新鲜苹果", "OPEN", 30.9244, 121.4595,
@@ -180,6 +183,7 @@ class RankingFormulaTest {
         p.setStandardPricePer500g(price);
         p.setAvgRating(rating);
         p.setReviewCount(reviews);
+        p.setLastEventAt(Instant.now().minus(60, ChronoUnit.DAYS));
         return p;
     }
 }

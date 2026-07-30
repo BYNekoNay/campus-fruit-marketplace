@@ -19,6 +19,8 @@ export default tseslint.config(
     rules: {
       'vue/multi-word-component-names': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      // Existing API error boundaries still use `any`; track them as warnings until typed errors are migrated.
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   }
 )

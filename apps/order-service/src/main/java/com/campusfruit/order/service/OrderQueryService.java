@@ -12,8 +12,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrderQueryService {
@@ -79,6 +83,28 @@ public class OrderQueryService {
             responses.add(toOrderResponse(order));
         }
         return responses;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getSalesStatsPerStore() {
+        Instant since = Instant.now().minus(30, ChronoUnit.DAYS);
+        List<Object[]> results = orderRepository.countCompletedOrdersByStoreSince(since);
+        Map<Long, Long> stats = new HashMap<>();
+        for (Object[] row : results) {
+            stats.put(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
+        }
+        return stats;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> getSalesStatsByStoreOffers(Long storeId) {
+        Instant since = Instant.now().minus(30, ChronoUnit.DAYS);
+        List<Object[]> results = orderItemRepository.countSalesByOfferIdAndStoreSince(storeId, since);
+        Map<Long, Long> stats = new HashMap<>();
+        for (Object[] row : results) {
+            stats.put(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
+        }
+        return stats;
     }
 
     private OrderResponse toOrderResponse(Order order) {

@@ -2,14 +2,11 @@ package com.campusfruit.order.controller;
 
 import com.campusfruit.order.dto.OrderResponse;
 import com.campusfruit.order.service.OrderQueryService;
-import com.campusfruit.order.repository.OrderItemRepository;
-import com.campusfruit.order.repository.OrderRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 内部投影导出接口（供其他微服务调用）。
@@ -19,15 +16,9 @@ import java.util.*;
 public class OrderProjectionExportController {
 
     private final OrderQueryService orderQueryService;
-    private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
 
-    public OrderProjectionExportController(OrderQueryService orderQueryService,
-                                            OrderRepository orderRepository,
-                                            OrderItemRepository orderItemRepository) {
+    public OrderProjectionExportController(OrderQueryService orderQueryService) {
         this.orderQueryService = orderQueryService;
-        this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
     }
 
     /**
@@ -49,15 +40,7 @@ public class OrderProjectionExportController {
      */
     @GetMapping("/sales-stats/per-store")
     public ResponseEntity<Map<Long, Long>> getSalesStatsPerStore() {
-        Instant since = Instant.now().minus(30, ChronoUnit.DAYS);
-        List<Object[]> results = orderRepository.countCompletedOrdersByStoreSince(since);
-        Map<Long, Long> stats = new HashMap<>();
-        for (Object[] row : results) {
-            Long storeId = (Long) row[0];
-            Long count = (Long) row[1];
-            stats.put(storeId, count);
-        }
-        return ResponseEntity.ok(stats);
+        return ResponseEntity.ok(orderQueryService.getSalesStatsPerStore());
     }
 
     /**
@@ -65,14 +48,6 @@ public class OrderProjectionExportController {
      */
     @GetMapping("/sales-stats/store/{storeId}")
     public ResponseEntity<Map<Long, Long>> getSalesStatsByStoreOffers(@PathVariable Long storeId) {
-        Instant since = Instant.now().minus(30, ChronoUnit.DAYS);
-        List<Object[]> results = orderItemRepository.countSalesByOfferIdAndStoreSince(storeId, since);
-        Map<Long, Long> stats = new HashMap<>();
-        for (Object[] row : results) {
-            Long offerId = ((Number) row[0]).longValue();
-            Long quantity = ((Number) row[1]).longValue();
-            stats.put(offerId, quantity);
-        }
-        return ResponseEntity.ok(stats);
+        return ResponseEntity.ok(orderQueryService.getSalesStatsByStoreOffers(storeId));
     }
 }

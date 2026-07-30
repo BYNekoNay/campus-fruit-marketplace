@@ -1,18 +1,21 @@
 name: CD Build & Push
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches:
       - master
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/bynekonay/campus-fruit
+  REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
+  NAMESPACE: ${{ vars.ALIYUN_ACR_NAMESPACE }}
 
 jobs:
   build-and-push:
     name: Build & Push
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,26 +23,53 @@ jobs:
 
     strategy:
       matrix:
-        service: [gateway, identity, merchant, offer, order, review, discovery]
+        include:
+          - image: gateway
+            application: gateway-service
+            dockerfile: Dockerfile
+          - image: identity
+            application: identity-service
+            dockerfile: Dockerfile
+          - image: merchant
+            application: merchant-service
+            dockerfile: Dockerfile
+          - image: offer
+            application: offer-service
+            dockerfile: Dockerfile
+          - image: order
+            application: order-service
+            dockerfile: Dockerfile
+          - image: review
+            application: review-service
+            dockerfile: Dockerfile
+          - image: discovery
+            application: discovery-service
+            dockerfile: Dockerfile
+          - image: web
+            application: web
+            dockerfile: Dockerfile.web
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - name: Login to ghcr.io
+      - name: Login to Alibaba Cloud ACR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.ALIYUN_ACR_USERNAME }}
+          password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
 
-      - name: Build & Push ${{ matrix.service }}
+      - name: Build & Push ${{ matrix.image }}
         run: |
-          IMAGE="${{ env.IMAGE_PREFIX }}/${{ matrix.service }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.NAMESPACE }}/campus-fruit-${{ matrix.image }}"
           docker build \
-            --build-arg SERVICE=${{ matrix.service }}-service \
+            -f ${{ matrix.dockerfile }} \
+            --build-arg SERVICE=${{ matrix.application }} \
             -t $IMAGE:latest \
-            -t $IMAGE:${{ github.sha }} \
+            -t $IMAGE:${{ github.event.workflow_run.head_sha || github.sha }} \
             .
           docker push $IMAGE:latest
-          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:${{ github.event.workflow_run.head_sha || github.sha }}

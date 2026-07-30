@@ -10,9 +10,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  backend-build:
-    name: Backend Build
+  backend-test:
+    name: Backend Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,12 +25,13 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
-      - name: Build with Maven
-        run: ./mvnw -T 1C compile --batch-mode
+      - name: Compile and run unit tests
+        run: ./mvnw -T 1C test --batch-mode
 
   frontend-build:
     name: Frontend Build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: web
@@ -49,20 +51,20 @@ jobs:
 
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       - name: Type check
         run: npm run typecheck
-        continue-on-error: true
 
       - name: Build
         run: npm run build
 
   compose-smoke:
     name: Compose Smoke Test
-    needs: backend-build
+    needs: backend-test
     runs-on: ubuntu-latest
-    continue-on-error: true
+    timeout-minutes: 15
+    env:
+      DB_PASSWORD: ci-test-password
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,7 +75,7 @@ jobs:
       - name: Verify MySQL
         run: |
           for i in $(seq 1 30); do
-            if docker exec campus-mysql mysqladmin ping -h localhost -u root -proot123 --silent; then
+            if docker exec campus-mysql mysqladmin ping -h localhost -u root -p"$DB_PASSWORD" --silent; then
               echo "MySQL is ready"
               exit 0
             fi
