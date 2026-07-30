@@ -6,13 +6,9 @@ on:
       - master
   workflow_dispatch:
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/bynekonay/campus-fruit
-
 jobs:
-  build-and-push:
-    name: Build & Push
+  build-and-deploy:
+    name: Build & Deploy
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,32 +22,44 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login to ghcr.io
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build & Push ${{ matrix.service }}
+      - name: Setup SSH
         run: |
-          IMAGE="${{ env.IMAGE_PREFIX }}/${{ matrix.service }}"
-          docker build \
-            --build-arg SERVICE=${{ matrix.service }}-service \
-            -t $IMAGE:latest \
-            .
-          docker push $IMAGE:latest
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ECS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.ECS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Build image
+        run: |
+          SERVICE=${{ matrix.service }}
+          docker build --build-arg SERVICE=${SERVICE}-service \
+            -t campus-fruit/${SERVICE}:latest .
+
+      - name: Save & Transfer to Server
+        run: |
+          SERVICE=${{ matrix.service }}
+          docker save campus-fruit/${SERVICE}:latest | gzip | \
+            ssh -i ~/.ssh/deploy_key ${{ secrets.ECS_USER }}@${{ secrets.ECS_HOST }} \
+            "gunzip | docker load && docker tag campus-fruit/${SERVICE}:latest ghcr.io/bynekonay/campus-fruit/${SERVICE}:latest"
+
+      - name: Push to ghcr.io (backup)
+        run: |
+          SERVICE=${{ matrix.service }}
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker tag campus-fruit/${SERVICE}:latest ghcr.io/bynekonay/campus-fruit/${SERVICE}:latest
+          docker push ghcr.io/bynekonay/campus-fruit/${SERVICE}:latest
+        continue-on-error: true
 
   deploy:
-    name: Deploy
-    needs: build-and-push
+    name: Start Services
+    needs: build-and-deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Sync to Server
+      - name: Sync compose files
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.ECS_SSH_KEY }}" > ~/.ssh/deploy_key
@@ -61,27 +69,17 @@ jobs:
             deploy/compose/ \
             ${{ secrets.ECS_USER }}@${{ secrets.ECS_HOST }}:/opt/campus-fruit-marketplace/deploy/compose/
 
-      - name: Deploy
+      - name: Start on Server
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.ECS_HOST }}
           username: ${{ secrets.ECS_USER }}
           key: ${{ secrets.ECS_SSH_KEY }}
           port: ${{ secrets.ECS_PORT }}
-          timeout: 15m
+          timeout: 10m
           script: |
             set -e
             cd /opt/campus-fruit-marketplace
-
-            echo "=== Login to ghcr.io ==="
-            echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            echo "=== Pull & Start ==="
-            docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all pull
             docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all up -d --wait
-
-            echo "=== Status ==="
             docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all ps
-
-            echo "=== Cleanup ==="
-            docker image prune -af --filter "until=48h"
+            docker image prune -af --filter "until=48h" || true
