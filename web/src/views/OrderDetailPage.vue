@@ -394,7 +394,6 @@ function handleAppeal() {
   ElMessageBox.alert('申诉功能：请联系门店说明情况，或在工作时间拨打客服电话。', '申诉渠道')
 }
 </script>
-</script>
 
 <style lang="scss" scoped>
 .order-detail-page {
