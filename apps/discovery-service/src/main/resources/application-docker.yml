@@ -3,3 +3,8 @@ spring:
     url: jdbc:mysql://campus-mysql:3306/discovery_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8mb4
   rabbitmq:
     host: campus-rabbitmq
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://identity:8081}
