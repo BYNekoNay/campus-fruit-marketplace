@@ -40,6 +40,8 @@ jobs:
           key: ${{ secrets.ECS_SSH_KEY }}
           port: ${{ secrets.ECS_PORT }}
           script_stop: true
+          timeout: 30m
+          command_timeout: 30m
           script: |
             set -e
             cd /opt/campus-fruit-marketplace
