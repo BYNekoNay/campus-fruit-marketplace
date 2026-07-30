@@ -34,7 +34,7 @@ services:
   # ---- 网关 ----
   gateway:
     profiles: ["marketplace", "all"]
-    image: campus-fruit/gateway:latest
+    image: ghcr.io/bynekonay/campus-fruit/gateway:latest
     container_name: campus-gateway
     ports:
       - "${GATEWAY_PORT:-8080}:8080"
@@ -46,7 +46,7 @@ services:
       nacos:
         condition: service_healthy
     networks:
-      - campus-fruit-net
+      - ghcr.io/bynekonay/campus-fruit-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
       interval: 15s
@@ -57,7 +57,7 @@ services:
   # ---- 身份服务 ----
   identity:
     profiles: ["marketplace", "all"]
-    image: campus-fruit/identity:latest
+    image: ghcr.io/bynekonay/campus-fruit/identity:latest
     container_name: campus-identity
     ports:
       - "${IDENTITY_PORT:-8081}:8081"
@@ -72,7 +72,7 @@ services:
       mysql:
         condition: service_healthy
     networks:
-      - campus-fruit-net
+      - ghcr.io/bynekonay/campus-fruit-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1"]
       interval: 15s
@@ -83,7 +83,7 @@ services:
   # ---- 商家服务 ----
   merchant:
     profiles: ["marketplace", "all"]
-    image: campus-fruit/merchant:latest
+    image: ghcr.io/bynekonay/campus-fruit/merchant:latest
     container_name: campus-merchant
     ports:
       - "${MERCHANT_PORT:-8082}:8082"
@@ -101,7 +101,7 @@ services:
       mysql:
         condition: service_healthy
     networks:
-      - campus-fruit-net
+      - ghcr.io/bynekonay/campus-fruit-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health || exit 1"]
       interval: 15s
@@ -112,7 +112,7 @@ services:
   # ---- 报价服务 ----
   offer:
     profiles: ["marketplace", "all"]
-    image: campus-fruit/offer:latest
+    image: ghcr.io/bynekonay/campus-fruit/offer:latest
     container_name: campus-offer
     ports:
       - "${OFFER_PORT:-8083}:8083"
@@ -129,7 +129,7 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - campus-fruit-net
+      - ghcr.io/bynekonay/campus-fruit-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health || exit 1"]
       interval: 15s
@@ -140,7 +140,7 @@ services:
   # ---- 订单服务 ----
   order:
     profiles: ["marketplace", "all"]
-    image: campus-fruit/order:latest
+    image: ghcr.io/bynekonay/campus-fruit/order:latest
     container_name: campus-order
     ports:
       - "${ORDER_PORT:-8084}:8084"
@@ -157,7 +157,7 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - campus-fruit-net
+      - ghcr.io/bynekonay/campus-fruit-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health || exit 1"]
       interval: 15s
@@ -168,7 +168,7 @@ services:
   # ---- 评价服务 ----
   review:
     profiles: ["marketplace", "all"]
-    image: campus-fruit/review:latest
+    image: ghcr.io/bynekonay/campus-fruit/review:latest
     container_name: campus-review
     ports:
       - "${REVIEW_PORT:-8085}:8085"
@@ -183,7 +183,7 @@ services:
       mysql:
         condition: service_healthy
     networks:
-      - campus-fruit-net
+      - ghcr.io/bynekonay/campus-fruit-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8085/actuator/health || exit 1"]
       interval: 15s
@@ -194,7 +194,7 @@ services:
   # ---- 发现服务 ----
   discovery:
     profiles: ["marketplace", "all"]
-    image: campus-fruit/discovery:latest
+    image: ghcr.io/bynekonay/campus-fruit/discovery:latest
     container_name: campus-discovery
     ports:
       - "${DISCOVERY_PORT:-8086}:8086"
@@ -211,7 +211,7 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - campus-fruit-net
+      - ghcr.io/bynekonay/campus-fruit-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8086/actuator/health || exit 1"]
       interval: 15s
@@ -233,7 +233,7 @@ services:
       gateway:
         condition: service_healthy
     networks:
-      - campus-fruit-net
+      - ghcr.io/bynekonay/campus-fruit-net
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:80/ || exit 1"]
       interval: 15s
@@ -241,6 +241,6 @@ services:
       retries: 5
 
 networks:
-  campus-fruit-net:
-    name: campus-fruit-net
+  ghcr.io/bynekonay/campus-fruit-net:
+    name: ghcr.io/bynekonay/campus-fruit-net
     driver: bridge
