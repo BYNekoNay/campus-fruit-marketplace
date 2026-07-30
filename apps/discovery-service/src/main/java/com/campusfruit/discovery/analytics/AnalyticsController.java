@@ -71,7 +71,7 @@ public class AnalyticsController {
     /**
      * 获取排序解释。
      */
-    @GetMapping("/discovery/ranking/explain/{offerId}")
+    @GetMapping("/analytics/ranking/explain/{offerId}")
     public ResponseEntity<RankingExplanation> explainRanking(
             @PathVariable Long offerId,
             @RequestParam String traceId) {
