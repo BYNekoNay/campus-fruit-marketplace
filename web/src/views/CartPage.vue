@@ -262,7 +262,7 @@ async function handleCreateOrder() {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: $text-color;
+    color: $text-primary;
 
     .el-icon {
       color: $primary-color;
@@ -292,7 +292,7 @@ async function handleCreateOrder() {
 
   &__total {
     font-size: 16px;
-    color: $text-color;
+    color: $text-primary;
   }
 
   &__total-price {
