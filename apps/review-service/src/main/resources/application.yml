@@ -34,6 +34,12 @@ spring:
     username: guest
     password: guest
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8081}
+
 server:
   port: 8085
 
