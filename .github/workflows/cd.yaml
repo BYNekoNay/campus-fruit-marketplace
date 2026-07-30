@@ -1,0 +1,42 @@
+name: CD Deploy
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  deploy:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.ECS_HOST }}
+          username: ${{ secrets.ECS_USER }}
+          key: ${{ secrets.ECS_SSH_KEY }}
+          port: ${{ secrets.ECS_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            echo "=== Pulling latest code ==="
+            cd /opt/campus-fruit-marketplace || git clone git@gitee.com:lbytuuue/campus-fruit-marketplace.git /opt/campus-fruit-marketplace
+            cd /opt/campus-fruit-marketplace
+            git pull origin master
+
+            echo "=== Starting infrastructure ==="
+            docker compose -f deploy/compose/compose.core.yaml --profile core up -d --wait
+
+            echo "=== Building & starting services ==="
+            docker compose -f deploy/compose/compose.yaml --profile marketplace up -d --build
+
+            echo "=== Checking health ==="
+            sleep 30
+            docker compose -f deploy/compose/compose.yaml --profile marketplace ps
+
+            echo "=== Cleaning old images ==="
+            docker image prune -af --filter "until=24h"

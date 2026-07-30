@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   backend-build:
@@ -29,6 +29,9 @@ jobs:
   frontend-build:
     name: Frontend Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +41,7 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+          cache-dependency-path: web/package-lock.json
 
       - name: Install dependencies
         run: npm ci
