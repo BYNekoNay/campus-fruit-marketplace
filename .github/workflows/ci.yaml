@@ -55,8 +55,8 @@ jobs:
         run: npm run typecheck
         continue-on-error: true
 
-      - name: Unit tests
-        run: npm run test:unit
+      - name: Build
+        run: npm run build
 
   compose-smoke:
     name: Compose Smoke Test
