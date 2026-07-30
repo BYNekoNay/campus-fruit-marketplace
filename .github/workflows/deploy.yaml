@@ -30,7 +30,7 @@ jobs:
       ACR_REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
       ACR_USERNAME: ${{ secrets.ALIYUN_ACR_USERNAME }}
       ACR_PASSWORD: ${{ secrets.ALIYUN_ACR_PASSWORD }}
-      SSH_KNOWN_HOSTS: ${{ secrets.ECS_SSH_KNOWN_HOSTS }}
+      SSH_HOST_FINGERPRINT: ${{ secrets.ECS_SSH_HOST_FINGERPRINT }}
       IMAGE_TAG: ${{ inputs.image_tag }}
     steps:
       - name: Checkout deployment manifests
@@ -45,7 +45,7 @@ jobs:
           test -n "$ACR_REGISTRY"
           test -n "$ACR_USERNAME"
           test -n "$ACR_PASSWORD"
-          test -n "$SSH_KNOWN_HOSTS"
+          test -n "$SSH_HOST_FINGERPRINT"
 
       - name: Configure SSH
         env:
@@ -54,7 +54,10 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh-keyscan -T 10 -t ed25519 "$DEPLOY_HOST" > ~/.ssh/known_hosts
+          test -s ~/.ssh/known_hosts
+          HOST_KEY_FINGERPRINT="$(ssh-keygen -lf ~/.ssh/known_hosts -E sha256 | awk '{print $2}')"
+          test "$HOST_KEY_FINGERPRINT" = "$SSH_HOST_FINGERPRINT"
           chmod 600 ~/.ssh/known_hosts
 
       - name: Upload deployment manifests
