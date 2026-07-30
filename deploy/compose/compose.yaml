@@ -4,8 +4,9 @@ version: "3.8"
 # 校园水果商城 — 全部服务启动
 # 使用方式:
 #   1. 先启基础设施: docker compose -f compose.core.yaml --profile core up -d
-#   2. 再启微服务:   docker compose -f compose.yaml --profile marketplace up -d --build
-#   3. 一键全部:     docker compose -f compose.core.yaml -f compose.yaml --profile all up -d --build
+#   2. 再启微服务:   docker compose -f compose.yaml --profile marketplace up -d
+#   3. 一键全部:     docker compose -f compose.core.yaml -f compose.yaml --profile all up -d
+# 镜像由 GitHub Actions 构建并推送到 ACR，ECS 只负责拉取
 # ============================================
 
 services:
@@ -33,11 +34,6 @@ services:
   # ---- 网关 ----
   gateway:
     profiles: ["marketplace", "all"]
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-      args:
-        SERVICE: gateway-service
     image: campus-fruit/gateway:latest
     container_name: campus-gateway
     ports:
@@ -61,11 +57,6 @@ services:
   # ---- 身份服务 ----
   identity:
     profiles: ["marketplace", "all"]
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-      args:
-        SERVICE: identity-service
     image: campus-fruit/identity:latest
     container_name: campus-identity
     ports:
@@ -92,11 +83,6 @@ services:
   # ---- 商家服务 ----
   merchant:
     profiles: ["marketplace", "all"]
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-      args:
-        SERVICE: merchant-service
     image: campus-fruit/merchant:latest
     container_name: campus-merchant
     ports:
@@ -126,11 +112,6 @@ services:
   # ---- 报价服务 ----
   offer:
     profiles: ["marketplace", "all"]
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-      args:
-        SERVICE: offer-service
     image: campus-fruit/offer:latest
     container_name: campus-offer
     ports:
@@ -159,11 +140,6 @@ services:
   # ---- 订单服务 ----
   order:
     profiles: ["marketplace", "all"]
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-      args:
-        SERVICE: order-service
     image: campus-fruit/order:latest
     container_name: campus-order
     ports:
@@ -192,11 +168,6 @@ services:
   # ---- 评价服务 ----
   review:
     profiles: ["marketplace", "all"]
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-      args:
-        SERVICE: review-service
     image: campus-fruit/review:latest
     container_name: campus-review
     ports:
@@ -223,11 +194,6 @@ services:
   # ---- 发现服务 ----
   discovery:
     profiles: ["marketplace", "all"]
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-      args:
-        SERVICE: discovery-service
     image: campus-fruit/discovery:latest
     container_name: campus-discovery
     ports:
