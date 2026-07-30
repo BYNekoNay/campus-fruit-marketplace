@@ -22,6 +22,10 @@ jobs:
       packages: write
 
     strategy:
+      # Each Java image resolves dependencies inside its own Docker build.
+      # Limit concurrent Maven Central traffic to avoid HTTP 429 responses.
+      fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           - image: gateway
