@@ -277,4 +277,4 @@ services:
 networks:
   campus-fruit-net:
     name: campus-fruit-net
-    external: true
+    driver: bridge
