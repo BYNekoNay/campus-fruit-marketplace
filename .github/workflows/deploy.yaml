@@ -27,7 +27,6 @@ jobs:
       DEPLOY_HOST: ${{ secrets.ECS_HOST }}
       DEPLOY_USER: ${{ secrets.ECS_USER }}
       DEPLOY_PATH: /opt/campus-fruit
-      SSH_KNOWN_HOSTS: ${{ secrets.ECS_SSH_KNOWN_HOSTS }}
       ACR_REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
       ACR_USERNAME: ${{ secrets.ALIYUN_ACR_USERNAME }}
       ACR_PASSWORD: ${{ secrets.ALIYUN_ACR_PASSWORD }}
@@ -42,7 +41,6 @@ jobs:
           test -n "$DEPLOY_HOST"
           test -n "$DEPLOY_USER"
           test -n "$DEPLOY_PATH"
-          test -n "$SSH_KNOWN_HOSTS"
           test -n "$ACR_REGISTRY"
           test -n "$ACR_USERNAME"
           test -n "$ACR_PASSWORD"
@@ -54,7 +52,8 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          ssh-keyscan -T 10 -t ed25519 "$DEPLOY_HOST" > ~/.ssh/known_hosts
+          ssh-keygen -lf ~/.ssh/known_hosts -E sha256 | grep -Fq 'SHA256:uxvFWXKSBiSwdq/Q8OpcidnjP9RnI4pWAtcxUAZO4yc'
 
       - name: Upload deployment manifests
         run: |
