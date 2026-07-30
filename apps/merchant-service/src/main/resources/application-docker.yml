@@ -1,7 +1,9 @@
 spring:
   datasource:
     url: jdbc:mysql://campus-mysql:3306/merchant_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
-  rabbitmq:
-    host: campus-rabbitmq
+  jpa:
     hibernate:
       ddl-auto: update
+  rabbitmq:
+    host: campus-rabbitmq
+

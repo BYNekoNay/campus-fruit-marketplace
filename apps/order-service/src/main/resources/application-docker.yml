@@ -1,15 +1,9 @@
 spring:
   datasource:
     url: jdbc:mysql://campus-mysql:3306/order_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+  jpa:
+    hibernate:
+      ddl-auto: update
   rabbitmq:
     host: campus-rabbitmq
 
-app:
-  order:
-    offer-service:
-      url: ${OFFER_SERVICE_URL:http://offer:8083}
-    services:
-      offer:
-        url: ${OFFER_SERVICE_URL:http://offer:8083}
-    hibernate:
-      ddl-auto: update
