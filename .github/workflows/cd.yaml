@@ -4,16 +4,33 @@ on:
   push:
     branches:
       - master
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy to ECS
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
-      - name: Deploy via SSH
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9
+        with:
+          ssh-private-key: ${{ secrets.ECS_SSH_KEY }}
+
+      - name: Sync code to ECS
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='target/' \
+            --exclude='node_modules/' \
+            --exclude='web/dist/' \
+            --exclude='.idea/' \
+            ./ ${{ secrets.ECS_USER }}@${{ secrets.ECS_HOST }}:/opt/campus-fruit-marketplace/
+
+      - name: Deploy on ECS
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.ECS_HOST }}
@@ -23,10 +40,7 @@ jobs:
           script_stop: true
           script: |
             set -e
-            echo "=== Pulling latest code ==="
-            cd /opt/campus-fruit-marketplace || git clone git@gitee.com:lbytuuue/campus-fruit-marketplace.git /opt/campus-fruit-marketplace
             cd /opt/campus-fruit-marketplace
-            git pull origin master
 
             echo "=== Starting infrastructure ==="
             docker compose -f deploy/compose/compose.core.yaml --profile core up -d --wait
