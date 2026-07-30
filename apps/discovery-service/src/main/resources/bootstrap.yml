@@ -1,6 +1,6 @@
 spring:
   application:
-    name: offer-service
+    name: discovery-service
   cloud:
     nacos:
       discovery:
