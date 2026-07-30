@@ -104,7 +104,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
 
 networks:
   campus-fruit-net:
