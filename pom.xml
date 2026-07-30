@@ -147,9 +147,6 @@
                 <artifactId>resilience4j-timelimiter</artifactId>
                 <version>${resilience4j.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.github.resilience4j</groupId>
-            </dependency>
 
             <!-- Testcontainers -->
             <dependency>
