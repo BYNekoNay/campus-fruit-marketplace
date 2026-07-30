@@ -30,6 +30,7 @@ jobs:
       ACR_REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
       ACR_USERNAME: ${{ secrets.ALIYUN_ACR_USERNAME }}
       ACR_PASSWORD: ${{ secrets.ALIYUN_ACR_PASSWORD }}
+      SSH_KNOWN_HOSTS: ${{ secrets.ECS_SSH_KNOWN_HOSTS }}
       IMAGE_TAG: ${{ inputs.image_tag }}
     steps:
       - name: Checkout deployment manifests
@@ -44,6 +45,7 @@ jobs:
           test -n "$ACR_REGISTRY"
           test -n "$ACR_USERNAME"
           test -n "$ACR_PASSWORD"
+          test -n "$SSH_KNOWN_HOSTS"
 
       - name: Configure SSH
         env:
@@ -52,8 +54,9 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -T 10 -t ed25519 "$DEPLOY_HOST" > ~/.ssh/known_hosts
-          ssh-keygen -lf ~/.ssh/known_hosts -E sha256 | grep -Fq 'SHA256:uxvFWXKSBiSwdq/Q8OpcidnjP9RnI4pWAtcxUAZO4yc'
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          ssh-keygen -lf ~/.ssh/known_hosts -E md5 | grep -Fq 'MD5:84:7b:35:f9:e6:48:c1:6c:cb:dd:07:f5:2a:b2:08:d'
 
       - name: Upload deployment manifests
         run: |
