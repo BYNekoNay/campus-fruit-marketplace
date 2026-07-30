@@ -70,11 +70,20 @@ jobs:
           printf '%s' "$ACR_PASSWORD" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "docker login --username \"$ACR_USERNAME\" --password-stdin \"$ACR_REGISTRY\""
           ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd \"$DEPLOY_PATH\" && test -s .env && grep -q '^DB_PASSWORD=.' .env && grep -q '^MINIO_ACCESS_KEY=.' .env && grep -q '^MINIO_SECRET_KEY=.' .env && grep -q '^IMAGE_REGISTRY=.' .env && grep -q '^IMAGE_NAMESPACE=.' .env && IMAGE_TAG=$IMAGE_TAG docker compose --env-file .env -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all pull && IMAGE_TAG=$IMAGE_TAG docker compose --env-file .env -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all up -d --remove-orphans"
 
-      - name: Verify gateway health
+      - name: Verify service health
         run: |
           ssh "$DEPLOY_USER@$DEPLOY_HOST" '
+            services="mysql redis rabbitmq nacos gateway identity merchant offer order review discovery web"
             for i in $(seq 1 30); do
-              if curl --fail --silent --show-error http://localhost:8080/actuator/health > /dev/null; then
+              unhealthy=0
+              for service in $services; do
+                state=$(docker inspect --format "{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}" "campus-$service" 2>/dev/null || true)
+                if [ "$state" != "running healthy" ]; then
+                  unhealthy=1
+                  printf "%s: %s\n" "$service" "${state:-missing}"
+                fi
+              done
+              if [ "$unhealthy" -eq 0 ] && curl --fail --silent --show-error http://localhost:8080/actuator/health > /dev/null; then
                 exit 0
               fi
               sleep 10
