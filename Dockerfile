@@ -25,7 +25,7 @@ COPY apps/discovery-service/pom.xml apps/discovery-service/
 COPY apps/${SERVICE}/src apps/${SERVICE}/src/
 
 # 编译目标服务及其依赖模块
-RUN mvn package -pl apps/${SERVICE} -am -DskipTests -q
+RUN mvn package -pl apps/${SERVICE} -am -q -DskipTests -Dmaven.test.skip=true
 
 # ============================================
 # 运行时镜像
