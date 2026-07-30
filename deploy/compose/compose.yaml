@@ -64,6 +64,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       NACOS_SERVER_ADDR: nacos:8848
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_ISSUER_URI: http://identity:8081
     depends_on:
       nacos:
         condition: service_healthy
@@ -90,6 +91,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       NACOS_SERVER_ADDR: nacos:8848
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_ISSUER_URI: http://identity:8081
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?MINIO_ACCESS_KEY must be set}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY must be set}
       BAIDU_SERVER_AK: ${BAIDU_SERVER_AK:-}
@@ -119,6 +121,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       NACOS_SERVER_ADDR: nacos:8848
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_ISSUER_URI: http://identity:8081
     depends_on:
       nacos:
         condition: service_healthy
@@ -147,6 +150,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       NACOS_SERVER_ADDR: nacos:8848
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_ISSUER_URI: http://identity:8081
     depends_on:
       nacos:
         condition: service_healthy
@@ -175,6 +179,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       NACOS_SERVER_ADDR: nacos:8848
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      JWT_ISSUER_URI: http://identity:8081
     depends_on:
       nacos:
         condition: service_healthy
