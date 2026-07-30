@@ -1,0 +1,37 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+
+server:
+  port: 0
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    com.campusfruit: DEBUG
+    org.springframework.cloud.gateway: WARN
+
+# 测试环境认证配置
+app:
+  auth:
+    jwt:
+      public-key-location: classpath:jwt-public.pem
+    whitelist:
+      - /api/auth/register
+      - /api/auth/login
+      - /api/auth/health
+      - /actuator/health
+      - /error
+      - /favicon.ico

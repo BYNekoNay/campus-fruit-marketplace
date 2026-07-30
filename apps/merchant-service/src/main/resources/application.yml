@@ -1,0 +1,89 @@
+spring:
+  application:
+    name: merchant-service
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+  messages:
+    encoding: UTF-8
+  datasource:
+    url: jdbc:mysql://localhost:3306/merchant_service?useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD:root123}
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: merchant-service
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  level:
+    com.campusfruit: DEBUG
+    org.springframework.web: INFO
+
+app:
+  baidu:
+    map:
+      server-ak: ${BAIDU_SERVER_AK:}
+      base-url: https://api.map.baidu.com
+  storage:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    quarantine-bucket: merchant-quarantine
+    approved-bucket: merchant-documents
+    use-ssl: false
+  internal:
+    api-key: ${INTERNAL_API_KEY:dev-internal-key}
+  merchant:
+    events:
+      exchange: campus-fruit.events
+      routing-key-merchant: merchant.event
+      routing-key-store: store.event
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      baidu-map:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+  timelimiter:
+    instances:
+      baidu-map:
+        timeout-duration: 5s

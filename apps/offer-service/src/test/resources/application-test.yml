@@ -1,0 +1,54 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+
+  datasource:
+    url: jdbc:h2:mem:offer_service_test;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+server:
+  port: 0
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    com.campusfruit: DEBUG
+    org.springframework.web: WARN
+
+app:
+  internal:
+    api-key: test-api-key
+  offer:
+    price-freshness:
+      warning-hours: 24
+      stale-exit-hours: 72
+      pause-hours: 168
+    events:
+      exchange: campus-fruit.test.events

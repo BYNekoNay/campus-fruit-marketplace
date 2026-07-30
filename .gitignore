@@ -1,0 +1,38 @@
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+
+# Node.js / Frontend
+node_modules/
+dist/
+.env
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+*.DS_Store
+Thumbs.db
+
+# Keys & Secrets
+*.pem
+!jwt-public.pem
+*.key
+*.keystore
+*.jks
+
+# Docker
+docker-compose.override.yml
+.env
+.env.*
+
+# Temp
+*.tmp
+*.swp
+*.swo
+*~

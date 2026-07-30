@@ -1,0 +1,108 @@
+// =============================================
+// 商家管理 - 专用样式
+// =============================================
+
+// 商家页面通用
+.merchant-page {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-lg;
+
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+    }
+  }
+
+  &__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-md;
+  }
+}
+
+// 状态标签颜色增强
+.status-tag {
+  &--pending {
+    --el-tag-bg-color: #fdf6ec;
+    --el-tag-border-color: #e6a23c;
+    --el-tag-text-color: #e6a23c;
+  }
+
+  &--success {
+    --el-tag-bg-color: #f0f9eb;
+    --el-tag-border-color: #67c23a;
+    --el-tag-text-color: #67c23a;
+  }
+
+  &--danger {
+    --el-tag-bg-color: #fef0f0;
+    --el-tag-border-color: #f56c6c;
+    --el-tag-text-color: #f56c6c;
+  }
+
+  &--info {
+    --el-tag-bg-color: #f4f4f5;
+    --el-tag-border-color: #909399;
+    --el-tag-text-color: #909399;
+  }
+}
+
+// 新店铺表格样式增强
+.merchant-table {
+  .el-table {
+    th.el-table__cell {
+      background-color: #f5f7fa;
+    }
+  }
+}
+
+// 统计卡片网格
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+// 审核页面
+.review-page {
+  .el-tabs__header {
+    margin-bottom: $spacing-md;
+  }
+}
+
+// 表单页面通用
+.merchant-form-page {
+  max-width: 800px;
+  margin: 0 auto;
+
+  .el-card__body {
+    padding: $spacing-xl;
+  }
+}
+
+// 地图选择器
+.map-picker-container {
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  overflow: hidden;
+
+  &__placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f7fa;
+    color: $text-secondary;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: #ebeef5;
+    }
+  }
+}

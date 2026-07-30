@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://campusfruit.com/schemas/events/event-envelope-v1.json",
+  "title": "Event Envelope v1",
+  "description": "Campus Fruit Marketplace 领域事件信封 Schema（v1）",
+  "type": "object",
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "occurredAt",
+    "producer",
+    "aggregateType",
+    "aggregateId",
+    "aggregateVersion",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "事件唯一标识"
+    },
+    "eventType": {
+      "type": "string",
+      "description": "全限定事件类型名，如 com.campusfruit.order.OrderPlaced"
+    },
+    "eventVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "事件版本号"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "事件发生时间（ISO 8601 UTC）"
+    },
+    "producer": {
+      "type": "string",
+      "description": "生产者服务名"
+    },
+    "sourceSequence": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "生产者侧递增序号"
+    },
+    "traceId": {
+      "type": "string",
+      "description": "分布式追踪 ID"
+    },
+    "aggregateType": {
+      "type": "string",
+      "description": "聚合根类型"
+    },
+    "aggregateId": {
+      "type": "string",
+      "description": "聚合根 ID"
+    },
+    "aggregateVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "聚合版本号（乐观锁）"
+    },
+    "payload": {
+      "type": "string",
+      "contentMediaType": "application/json",
+      "description": "事件载荷（JSON 字符串）"
+    },
+    "tombstone": {
+      "type": "boolean",
+      "default": false,
+      "description": "是否为墓碑事件"
+    }
+  },
+  "additionalProperties": false
+}

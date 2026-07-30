@@ -1,0 +1,43 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+  datasource:
+    url: jdbc:tc:mysql:9.2:///merchant_service_test
+    username: test
+    password: test
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        auto-startup: false
+
+app:
+  merchant:
+    events:
+      exchange: campus-fruit.events.test
+
+server:
+  port: 0
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    com.campusfruit: DEBUG
+    org.springframework.web: WARN

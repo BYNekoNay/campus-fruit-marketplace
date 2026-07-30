@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://campusfruit.dev/schemas/event-envelope-v1.json",
+  "title": "Event Envelope",
+  "description": "Standard event envelope for campus fruit marketplace events",
+  "type": "object",
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "occurredAt",
+    "producer",
+    "sourceSequence",
+    "traceId",
+    "aggregateType",
+    "aggregateId",
+    "aggregateVersion"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique event identifier (UUID v7 recommended)"
+    },
+    "eventType": {
+      "type": "string",
+      "pattern": "^[a-z][a-zA-Z0-9]+(\\.[a-z][a-zA-Z0-9]+)*\\.[A-Z][a-zA-Z0-9]+$",
+      "description": "Fully qualified event type, e.g. order.OrderCreated"
+    },
+    "eventVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version for this event type"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the event occurred"
+    },
+    "producer": {
+      "type": "string",
+      "description": "Name of the service that produced the event, e.g. order-service"
+    },
+    "sourceSequence": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonically increasing sequence number within the producer"
+    },
+    "traceId": {
+      "type": "string",
+      "description": "Distributed tracing identifier (W3C Trace Context format)"
+    },
+    "aggregateType": {
+      "type": "string",
+      "description": "Type of the aggregate, e.g. Order"
+    },
+    "aggregateId": {
+      "type": "string",
+      "description": "Identifier of the aggregate instance"
+    },
+    "aggregateVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of the aggregate after applying this event"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Domain event data, schema is specific to eventType"
+    },
+    "tombstone": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a tombstone event (logical delete of aggregate)"
+    },
+    "correlationId": {
+      "type": "string",
+      "description": "Correlation identifier linking related events"
+    },
+    "userId": {
+      "type": "string",
+      "description": "ID of the user who triggered this event"
+    }
+  },
+  "additionalProperties": false
+}

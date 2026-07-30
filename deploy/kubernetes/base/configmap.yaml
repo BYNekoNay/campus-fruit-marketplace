@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: campus-fruit-config
+  namespace: campus-fruit
+data:
+  SPRING_PROFILES_ACTIVE: "k8s"
+  MYSQL_HOST: "mysql"
+  MYSQL_PORT: "3306"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: campus-fruit-secret
+  namespace: campus-fruit
+type: Opaque
+stringData:
+  DB_USERNAME: "root"
+  DB_PASSWORD: "${DB_PASSWORD}"
+  BAIDU_SERVER_AK: "${BAIDU_SERVER_AK}"
+  BAIDU_BROWSER_AK: "${BAIDU_BROWSER_AK}"

@@ -1,0 +1,180 @@
+version: "3.8"
+
+# ============================================
+# 校园水果商城 — 全部微服务启动
+# 使用方式: docker compose -f compose.yaml --profile marketplace up -d
+# ============================================
+
+services:
+  # ---- 基础设施（引用 core compose） ----
+  mysql:
+    extends:
+      file: compose.core.yaml
+      service: mysql
+
+  redis:
+    extends:
+      file: compose.core.yaml
+      service: redis
+
+  rabbitmq:
+    extends:
+      file: compose.core.yaml
+      service: rabbitmq
+
+  # ---- 网关 ----
+  gateway:
+    profiles: ["marketplace"]
+    build:
+      context: ../../apps/gateway-service
+      dockerfile: Dockerfile
+    image: campus-fruit/gateway:latest
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      retries: 5
+
+  # ---- 身份服务 ----
+  identity:
+    profiles: ["marketplace"]
+    build:
+      context: ../../apps/identity-service
+      dockerfile: Dockerfile
+    image: campus-fruit/identity:latest
+    ports:
+      - "${IDENTITY_PORT:-8081}:8081"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_PROFILES_ACTIVE: docker
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 15s
+      retries: 5
+
+  # ---- 商家服务 ----
+  merchant:
+    profiles: ["marketplace"]
+    build:
+      context: ../../apps/merchant-service
+      dockerfile: Dockerfile
+    image: campus-fruit/merchant:latest
+    ports:
+      - "${MERCHANT_PORT:-8082}:8082"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_PROFILES_ACTIVE: docker
+      DB_PASSWORD: ${DB_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      BAIDU_SERVER_AK: ${BAIDU_SERVER_AK}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 15s
+      retries: 5
+
+  # ---- 报价服务 ----
+  offer:
+    profiles: ["marketplace"]
+    build:
+      context: ../../apps/offer-service
+      dockerfile: Dockerfile
+    image: campus-fruit/offer:latest
+    ports:
+      - "${OFFER_PORT:-8083}:8083"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_PROFILES_ACTIVE: docker
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 15s
+      retries: 5
+
+  # ---- 订单服务 ----
+  order:
+    profiles: ["marketplace"]
+    build:
+      context: ../../apps/order-service
+      dockerfile: Dockerfile
+    image: campus-fruit/order:latest
+    ports:
+      - "${ORDER_PORT:-8084}:8084"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_PROFILES_ACTIVE: docker
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 15s
+      retries: 5
+
+  # ---- 评价服务 ----
+  review:
+    profiles: ["marketplace"]
+    build:
+      context: ../../apps/review-service
+      dockerfile: Dockerfile
+    image: campus-fruit/review:latest
+    ports:
+      - "${REVIEW_PORT:-8085}:8085"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_PROFILES_ACTIVE: docker
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 15s
+      retries: 5
+
+  # ---- 发现服务 ----
+  discovery:
+    profiles: ["marketplace"]
+    build:
+      context: ../../apps/discovery-service
+      dockerfile: Dockerfile
+    image: campus-fruit/discovery:latest
+    ports:
+      - "${DISCOVERY_PORT:-8086}:8086"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      SPRING_PROFILES_ACTIVE: docker
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 15s
+      retries: 5

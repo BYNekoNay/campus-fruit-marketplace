@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend-build:
+    name: Backend Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: "maven"
+
+      - name: Build with Maven
+        run: ./mvnw -T 1C verify -pl '!web' --batch-mode
+
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test:unit
+
+  compose-smoke:
+    name: Compose Smoke Test
+    needs: backend-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start core services
+        run: docker compose -f deploy/compose/compose.core.yaml --profile core up -d --wait
+
+      - name: Verify MySQL
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec campus-mysql mysqladmin ping -h localhost -u root -proot123 --silent; then
+              echo "MySQL is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL failed to start"
+          exit 1
+
+      - name: Verify Redis
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec campus-redis redis-cli ping | grep -q PONG; then
+              echo "Redis is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Redis failed to start"
+          exit 1
+
+      - name: Verify RabbitMQ
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec campus-rabbitmq rabbitmqctl status > /dev/null 2>&1; then
+              echo "RabbitMQ is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "RabbitMQ failed to start"
+          exit 1
+
+      - name: Verify Nacos
+        run: |
+          for i in $(seq 1 60); do
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8848/nacos/v1/console/health/readiness)
+            if [ "$status_code" = "200" ]; then
+              echo "Nacos is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Nacos failed to start"
+          exit 1
+
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose -f deploy/compose/compose.core.yaml --profile core logs
+
+      - name: Stop services
+        if: always()
+        run: docker compose -f deploy/compose/compose.core.yaml --profile core down -v

@@ -1,0 +1,32 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+  datasource:
+    # DataSource properties are set dynamically by Testcontainers via @DynamicPropertySource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+server:
+  port: 0
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    com.campusfruit: DEBUG
+    org.springframework.web: WARN
+    org.springframework.security: DEBUG
