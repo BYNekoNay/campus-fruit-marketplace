@@ -3,3 +3,5 @@ spring:
     url: jdbc:mysql://campus-mysql:3306/offer_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
   rabbitmq:
     host: campus-rabbitmq
+    hibernate:
+      ddl-auto: update

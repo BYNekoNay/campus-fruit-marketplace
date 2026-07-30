@@ -11,3 +11,5 @@ app:
     services:
       offer:
         url: ${OFFER_SERVICE_URL:http://offer:8083}
+    hibernate:
+      ddl-auto: update
