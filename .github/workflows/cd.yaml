@@ -47,12 +47,12 @@ jobs:
             echo "=== Starting infrastructure ==="
             docker compose -f deploy/compose/compose.core.yaml --profile core up -d --wait
 
-            echo "=== Building & starting services ==="
-            docker compose -f deploy/compose/compose.yaml --profile marketplace up -d --build
+            echo "=== Starting all services ==="
+            docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all up -d --build
 
             echo "=== Checking health ==="
             sleep 30
-            docker compose -f deploy/compose/compose.yaml --profile marketplace ps
+            docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all ps
 
             echo "=== Cleaning old images ==="
             docker image prune -af --filter "until=24h"
