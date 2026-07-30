@@ -12,10 +12,19 @@ WORKDIR /build
 COPY pom.xml ./
 COPY libs/ libs/
 
-# 复制目标服务源码
-COPY apps/${SERVICE}/ apps/${SERVICE}/
+# 复制所有服务的 pom.xml（仅 pom，不含源码），满足 Maven reactor 要求
+COPY apps/gateway-service/pom.xml apps/gateway-service/
+COPY apps/identity-service/pom.xml apps/identity-service/
+COPY apps/merchant-service/pom.xml apps/merchant-service/
+COPY apps/offer-service/pom.xml apps/offer-service/
+COPY apps/order-service/pom.xml apps/order-service/
+COPY apps/review-service/pom.xml apps/review-service/
+COPY apps/discovery-service/pom.xml apps/discovery-service/
 
-# 编译目标服务及其依赖模块（-am = also-make）
+# 复制目标服务完整源码
+COPY apps/${SERVICE}/src apps/${SERVICE}/src/
+
+# 编译目标服务及其依赖模块
 RUN mvn package -pl apps/${SERVICE} -am -DskipTests -q
 
 # ============================================
