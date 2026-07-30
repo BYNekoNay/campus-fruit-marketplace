@@ -56,6 +56,86 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload deployment manifests
+        run: |
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p \"$DEPLOY_PATH\""
+          rsync -az deploy/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/deploy/"
+
+      - name: Pull and restart services
+        run: |
+          printf '%s' "$ACR_PASSWORD" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "docker login --username \"$ACR_USERNAME\" --password-stdin \"$ACR_REGISTRY\""
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd \"$DEPLOY_PATH\" && test -s .env && grep -q '^DB_PASSWORD=.' .env && grep -q '^MINIO_ACCESS_KEY=.' .env && grep -q '^MINIO_SECRET_KEY=.' .env && grep -q '^IMAGE_REGISTRY=.' .env && grep -q '^IMAGE_NAMESPACE=.' .env && IMAGE_TAG=$IMAGE_TAG docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all pull && IMAGE_TAG=$IMAGE_TAG docker compose -f deploy/compose/compose.core.yaml -f deploy/compose/compose.yaml --profile all up -d --remove-orphans"
+
+      - name: Verify gateway health
+        run: |
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" '
+            for i in $(seq 1 30); do
+              if curl --fail --silent --show-error http://localhost:8080/actuator/health > /dev/null; then
+                exit 0
+              fi
+              sleep 10
+            done
+            exit 1
+          '
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Full 40-character commit SHA to deploy
+        required: true
+        type: string
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to Alibaba Cloud ECS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    env:
+      DEPLOY_HOST: ${{ secrets.ECS_HOST }}
+      DEPLOY_USER: ${{ secrets.ECS_USER }}
+      DEPLOY_PATH: /opt/campus-fruit
+      ACR_REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
+      ACR_USERNAME: ${{ secrets.ALIYUN_ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ALIYUN_ACR_PASSWORD }}
+      SSH_KNOWN_HOSTS: ${{ secrets.ECS_SSH_KNOWN_HOSTS }}
+      IMAGE_TAG: ${{ inputs.image_tag }}
+    steps:
+      - name: Checkout deployment manifests
+        uses: actions/checkout@v4
+
+      - name: Validate deployment input
+        run: |
+          [[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]]
+          test -n "$DEPLOY_HOST"
+          test -n "$DEPLOY_USER"
+          test -n "$DEPLOY_PATH"
+          test -n "$ACR_REGISTRY"
+          test -n "$ACR_USERNAME"
+          test -n "$ACR_PASSWORD"
+          test -n "$SSH_KNOWN_HOSTS"
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.ECS_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
           ssh-keygen -lf ~/.ssh/known_hosts -E md5 | grep -Fq 'MD5:84:7b:35:f9:e6:48:c1:6c:cb:dd:07:f5:2a:b2:08:d'
 
       - name: Upload deployment manifests
