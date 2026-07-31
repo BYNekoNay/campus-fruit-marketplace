@@ -57,7 +57,11 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         // 白名单路径直接放行
         if (isWhitelisted(path)) {
             log.debug("Whitelisted path, skipping auth: {}", path);
-            return chain.filter(exchange);
+            // A stale bearer token must not make a public endpoint fail downstream.
+            var publicRequest = exchange.getRequest().mutate()
+                    .headers(headers -> headers.remove(HttpHeaders.AUTHORIZATION))
+                    .build();
+            return chain.filter(exchange.mutate().request(publicRequest).build());
         }
 
         // 提取 Authorization header
