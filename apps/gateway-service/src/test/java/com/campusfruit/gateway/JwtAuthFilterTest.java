@@ -31,6 +31,6 @@ class JwtAuthFilterTest {
         }).block();
 
         assertThat(forwarded).isTrue();
-        assertThat(forwardedAuthorization).isNull();
+        assertThat(forwardedAuthorization.get()).isNull();
     }
 }
