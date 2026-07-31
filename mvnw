@@ -24,7 +24,7 @@ done
 PRGDIR=$(dirname "$PRG")
 
 # Only set MAVEN_PROJECTBASEDIR if not already set
-[ -z "$MAVEN_PROJECTBASEDIR" ] && MAVEN_PROJECTBASEDIR=$(cd "$PRGDIR/.." >/dev/null && pwd)
+[ -z "$MAVEN_PROJECTBASEDIR" ] && MAVEN_PROJECTBASEDIR=$(cd "$PRGDIR" >/dev/null && pwd)
 
 if [ -z "$MAVEN_HOME" ] || [ ! -e "$MAVEN_HOME/bin/mvn" ]; then
   if [ -z "$MAVEN_USER_HOME" ]; then
