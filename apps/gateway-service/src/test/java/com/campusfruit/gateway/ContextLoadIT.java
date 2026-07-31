@@ -14,6 +14,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.WebFilter;
+import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,9 +65,9 @@ class ContextLoadIT {
                 .blockFirst();
 
         assertThat(discoveryRoute).isNotNull();
-        assertThat(discoveryRoute.getPredicate().apply(exchangeFor("/api/discovery/categories")).block())
+        assertThat(Mono.from(discoveryRoute.getPredicate().apply(exchangeFor("/api/discovery/categories"))).block())
                 .isTrue();
-        assertThat(discoveryRoute.getPredicate().apply(exchangeFor("/api/favorites")).block())
+        assertThat(Mono.from(discoveryRoute.getPredicate().apply(exchangeFor("/api/favorites"))).block())
                 .isTrue();
     }
 
