@@ -83,7 +83,7 @@ const rules = {
 onMounted(async () => {
   if (orderId) {
     try {
-      const res = await request.get(`/api/orders/${orderId}`)
+      const res = await request.get(`/orders/${orderId}`)
       orderInfo.value = res
     } catch { /* ignore */ }
   }

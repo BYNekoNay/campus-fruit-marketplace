@@ -18,7 +18,7 @@ export const useDiscoveryStore = defineStore('discovery', () => {
   async function search(params: Partial<SearchRequest>): Promise<SearchResponse> {
     loading.value = true
     try {
-      const res: any = await request.post('/api/discovery/search', {
+      const res: any = await request.post('/discovery/search', {
         keyword: params.keyword || '',
         category: params.category || '',
         lat: params.lat ?? null,
@@ -56,7 +56,7 @@ export const useDiscoveryStore = defineStore('discovery', () => {
     try {
       const params: Record<string, string | number> = { lat, lng }
       if (radius) params.radiusKm = radius
-      const res: any = await request.get('/api/discovery/nearby', { params })
+      const res: any = await request.get('/discovery/nearby', { params })
       nearbyStores.value = res.data ?? []
       return nearbyStores.value
     } catch {
@@ -70,7 +70,7 @@ export const useDiscoveryStore = defineStore('discovery', () => {
   async function compare(offerIds: number[]): Promise<CompareResponse | null> {
     loading.value = true
     try {
-      const res: any = await request.post('/api/discovery/compare', { offerIds })
+      const res: any = await request.post('/discovery/compare', { offerIds })
       compareData.value = res.data ?? null
       return compareData.value
     } catch {
@@ -85,7 +85,7 @@ export const useDiscoveryStore = defineStore('discovery', () => {
 
   async function fetchCategories(): Promise<CategoryOption[]> {
     try {
-      const res: any = await request.get('/api/discovery/categories')
+      const res: any = await request.get('/discovery/categories')
       categories.value = res.data ?? []
       return categories.value
     } catch {
@@ -98,7 +98,7 @@ export const useDiscoveryStore = defineStore('discovery', () => {
 
   async function fetchPriceStats(fruitId: number): Promise<PriceStats | null> {
     try {
-      const res: any = await request.get(`/api/discovery/stats/${fruitId}`)
+      const res: any = await request.get(`/discovery/stats/${fruitId}`)
       priceStats.value = res.data ?? null
       return priceStats.value
     } catch {
@@ -111,7 +111,7 @@ export const useDiscoveryStore = defineStore('discovery', () => {
 
   async function fetchFavorites(): Promise<FavoriteStore[]> {
     try {
-      const res: any = await request.get('/api/favorites')
+      const res: any = await request.get('/favorites')
       favorites.value = res.data ?? []
       return favorites.value
     } catch {
@@ -122,7 +122,7 @@ export const useDiscoveryStore = defineStore('discovery', () => {
 
   async function addFavorite(storeId: number): Promise<boolean> {
     try {
-      await request.post(`/api/favorites/${storeId}`)
+      await request.post(`/favorites/${storeId}`)
       // 乐观添加到本地列表
       if (!favorites.value.find((f) => f.storeId === storeId)) {
         favorites.value.push({
@@ -139,7 +139,7 @@ export const useDiscoveryStore = defineStore('discovery', () => {
 
   async function removeFavorite(storeId: number): Promise<boolean> {
     try {
-      await request.delete(`/api/favorites/${storeId}`)
+      await request.delete(`/favorites/${storeId}`)
       favorites.value = favorites.value.filter((f) => f.storeId !== storeId)
       return true
     } catch {

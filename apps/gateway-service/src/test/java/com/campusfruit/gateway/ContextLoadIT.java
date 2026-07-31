@@ -7,7 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.Route;
 import org.springframework.context.ApplicationContext;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.WebFilter;
 
@@ -41,5 +45,30 @@ class ContextLoadIT {
     @Test
     void securityWebFilterChainShouldBeConfigured() {
         assertThat(context.getBean(SecurityConfig.class)).isNotNull();
+    }
+
+    @Test
+    void routeLocatorShouldRegisterAllPublicServiceRoutes() {
+        RouteLocator routeLocator = context.getBean(RouteLocator.class);
+
+        assertThat(routeLocator.getRoutes().map(route -> route.getId()).collectList().block())
+                .contains("identity-service", "discovery-service", "merchant-service",
+                        "offer-service", "order-service", "review-service");
+    }
+
+    @Test
+    void discoveryRouteShouldMatchDiscoveryAndFavoriteEndpoints() {
+        RouteLocator routeLocator = context.getBean(RouteLocator.class);
+        Route discoveryRoute = routeLocator.getRoutes()
+                .filter(route -> route.getId().equals("discovery-service"))
+                .blockFirst();
+
+        assertThat(discoveryRoute).isNotNull();
+        assertThat(discoveryRoute.getPredicate().test(exchangeFor("/api/discovery/categories"))).isTrue();
+        assertThat(discoveryRoute.getPredicate().test(exchangeFor("/api/favorites"))).isTrue();
+    }
+
+    private MockServerWebExchange exchangeFor(String path) {
+        return MockServerWebExchange.from(MockServerHttpRequest.get(path).build());
     }
 }

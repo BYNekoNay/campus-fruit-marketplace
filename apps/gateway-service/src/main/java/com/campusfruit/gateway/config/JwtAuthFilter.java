@@ -13,13 +13,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
+import org.springframework.http.server.PathContainer;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -35,11 +37,12 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
     private static final String TRACE_ID_HEADER = "X-Trace-Id";
+    private static final PathPatternParser PATH_PATTERN_PARSER = new PathPatternParser();
 
-    private final Set<String> whitelist;
+    private final List<PathPattern> whitelist;
 
     public JwtAuthFilter(@Value("${app.auth.whitelist}") List<String> whitelist) {
-        this.whitelist = Set.copyOf(whitelist);
+        this.whitelist = whitelist.stream().map(PATH_PATTERN_PARSER::parse).toList();
     }
 
     @Override
@@ -102,7 +105,8 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
      * 检查路径是否在白名单中。
      */
     private boolean isWhitelisted(String path) {
-        return whitelist.contains(path);
+        PathContainer pathContainer = PathContainer.parsePath(path);
+        return whitelist.stream().anyMatch(pattern -> pattern.matches(pathContainer));
     }
 
     /**

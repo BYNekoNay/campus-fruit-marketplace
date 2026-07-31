@@ -12,7 +12,7 @@ export const useReviewStore = defineStore('review', () => {
   async function submitReview(dto: SubmitReviewRequest) {
     loading.value = true
     try {
-      const res = await request.post<ReviewInfo>('/api/reviews', dto)
+      const res = await request.post<ReviewInfo>('/reviews', dto)
       return res
     } finally {
       loading.value = false
@@ -20,14 +20,14 @@ export const useReviewStore = defineStore('review', () => {
   }
 
   async function updateReview(id: number, dto: { rating: number; content: string; tags: string[] }) {
-    const res = await request.put<ReviewInfo>(`/api/reviews/${id}`, dto)
+    const res = await request.put<ReviewInfo>(`/reviews/${id}`, dto)
     return res
   }
 
   async function fetchMyReviews() {
     loading.value = true
     try {
-      const res = await request.get<ReviewInfo[]>('/api/reviews/my')
+      const res = await request.get<ReviewInfo[]>('/reviews/my')
       myReviews.value = Array.isArray(res) ? res : (res as any).data ?? []
     } finally {
       loading.value = false
@@ -37,7 +37,7 @@ export const useReviewStore = defineStore('review', () => {
   async function fetchStoreReviews(storeId: number, page = 1, size = 10) {
     loading.value = true
     try {
-      const res: any = await request.get(`/api/stores/${storeId}/reviews`, { params: { page, size } })
+      const res: any = await request.get(`/stores/${storeId}/reviews`, { params: { page, size } })
       storeReviews.value = res.items ?? res.data?.items ?? []
       statistics.value = res.statistics ?? res.data?.statistics ?? null
     } finally {
@@ -46,17 +46,17 @@ export const useReviewStore = defineStore('review', () => {
   }
 
   async function addMerchantReply(reviewId: number, content: string) {
-    await request.post(`/api/reviews/${reviewId}/reply`, { content })
+    await request.post(`/reviews/${reviewId}/reply`, { content })
   }
 
   async function submitReport(reviewId: number, reason: string) {
-    await request.post('/api/reports', { reviewId, reason })
+    await request.post('/reports', { reviewId, reason })
   }
 
   async function fetchPendingReports() {
     loading.value = true
     try {
-      const res = await request.get<ReviewReportInfo[]>('/api/admin/reports')
+      const res = await request.get<ReviewReportInfo[]>('/admin/reports')
       reports.value = Array.isArray(res) ? res : (res as any).data ?? []
     } finally {
       loading.value = false
@@ -64,7 +64,7 @@ export const useReviewStore = defineStore('review', () => {
   }
 
   async function reviewReport(reportId: number, action: 'DISMISS' | 'ACCEPT', comment?: string) {
-    await request.put(`/api/admin/reports/${reportId}/review`, { action, comment })
+    await request.put(`/admin/reports/${reportId}/review`, { action, comment })
     await fetchPendingReports()
   }
 

@@ -79,8 +79,8 @@ const maxOrder = computed(() => Math.max(1, ...orderTrend.value.map(d => d.count
 onMounted(async () => {
   try {
     const [users, orders] = await Promise.all([
-      request.get('/api/admin/users?size=1').catch(() => ({ totalCount: 0 })),
-      request.get('/api/admin/orders/stats').catch(() => ({})),
+      request.get('/admin/users?size=1').catch(() => ({ totalCount: 0 })),
+      request.get('/admin/orders/stats').catch(() => ({})),
     ])
     stats.value[0].value = (users as any).totalCount ?? 0
     stats.value[3].value = (orders as any).todayCount ?? 0
