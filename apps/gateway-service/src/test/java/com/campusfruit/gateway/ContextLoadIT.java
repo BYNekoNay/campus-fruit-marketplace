@@ -64,8 +64,10 @@ class ContextLoadIT {
                 .blockFirst();
 
         assertThat(discoveryRoute).isNotNull();
-        assertThat(discoveryRoute.getPredicate().test(exchangeFor("/api/discovery/categories"))).isTrue();
-        assertThat(discoveryRoute.getPredicate().test(exchangeFor("/api/favorites"))).isTrue();
+        assertThat(discoveryRoute.getPredicate().apply(exchangeFor("/api/discovery/categories")).block())
+                .isTrue();
+        assertThat(discoveryRoute.getPredicate().apply(exchangeFor("/api/favorites")).block())
+                .isTrue();
     }
 
     private MockServerWebExchange exchangeFor(String path) {
