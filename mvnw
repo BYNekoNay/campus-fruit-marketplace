@@ -36,8 +36,8 @@ if [ -z "$MAVEN_HOME" ] || [ ! -e "$MAVEN_HOME/bin/mvn" ]; then
   if [ ! -f "$WRAPPER_JAR" ]; then
     WRAPPER_DIR="$MAVEN_USER_HOME/wrapper/dists"
     mkdir -p "$WRAPPER_DIR"
-    WRAPPER_URL=$(grep 'wrapperUrl=' "$PRGDIR/wrapper/maven-wrapper.properties" | cut -d= -f2)
-    DISTRIBUTION_URL=$(grep 'distributionUrl=' "$PRGDIR/wrapper/maven-wrapper.properties" | cut -d= -f2)
+    WRAPPER_URL=$(grep 'wrapperUrl=' "$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.properties" | cut -d= -f2)
+    DISTRIBUTION_URL=$(grep 'distributionUrl=' "$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.properties" | cut -d= -f2)
 
     if command -v curl >/dev/null 2>&1; then
       echo "Downloading Maven Wrapper..."
