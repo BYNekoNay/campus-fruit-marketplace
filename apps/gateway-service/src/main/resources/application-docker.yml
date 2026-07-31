@@ -1,15 +1,3 @@
 app:
   auth:
-    whitelist:
-      - /api/auth/register
-      - /api/auth/login
-      - /api/auth/health
-      - /api/discovery/search
-      - /api/discovery/compare
-      - /api/discovery/categories
-      - /api/discovery/nearby
-      - /api/discovery/stats/**
-      - /api/discovery/stores/**
-      - /actuator/health
-      - /error
-      - /favicon.ico
+    whitelist: /api/auth/register,/api/auth/login,/api/auth/health,/api/discovery/search,/api/discovery/compare,/api/discovery/categories,/api/discovery/nearby,/api/discovery/stats/**,/api/discovery/stores/**,/actuator/health,/error,/favicon.ico
